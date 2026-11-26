@@ -34,7 +34,17 @@ func (m model) View() string {
 	// dark canvas itself comes from the OSC 11 terminal background set in main(),
 	// which fills every cell uniformly (a wrapped lipgloss background goes ragged
 	// where inner styles reset it).
-	return m.fillHeight(v)
+	//
+	// The frame also turns terminal autowrap off. Rows run flush to the last
+	// column, and some terminals draw certain characters (skin tones, ZWJ
+	// sequences, flags, keycaps, soft hyphens) wider than Go measures them. With
+	// autowrap on, that row spills onto the next line and scrolls the screen, and
+	// the renderer, which only redraws changed lines, leaves stale copies of the
+	// status bar behind. With it off, the overflow is clipped at the edge instead.
+	// It rides in the frame rather than being set once in main() because some
+	// terminals (macOS Terminal) reset it on entering the alt screen, and every
+	// full repaint (alt screen entry, resize) resends it. main() turns it back on.
+	return ansi.ResetModeAutoWrap + m.fillHeight(v)
 }
 
 func wordmark() string { return gradientText("oh-my-reddit", "#ff6a3d", "#b14eff") }

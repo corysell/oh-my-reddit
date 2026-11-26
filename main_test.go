@@ -41,6 +41,21 @@ func TestOPScreenRenders(t *testing.T) {
 	}
 }
 
+// Every frame must open by turning autowrap off, so a row the terminal draws
+// wider than we measured clips instead of scrolling the screen (ghost status
+// bars). It has to be in the frame itself, not set once at startup, because some
+// terminals reset it when the alt screen is entered.
+func TestViewDisablesAutowrap(t *testing.T) {
+	for _, opOpen := range []bool{false, true} {
+		m := opScreenModel(100, 30)
+		m.opOpen = opOpen
+		m.syncOPModal()
+		if out := m.View(); !strings.HasPrefix(out, ansi.ResetModeAutoWrap) {
+			t.Errorf("opOpen=%v: frame does not start with autowrap off: %q", opOpen, out[:min(len(out), 20)])
+		}
+	}
+}
+
 func TestOPScreenLinkPost(t *testing.T) {
 	m := opScreenModel(100, 30)
 	m.op = &post{title: "cool link", author: "someone", link: "https://example.com/x", hasScore: true, score: 5}

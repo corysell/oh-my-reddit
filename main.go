@@ -9,6 +9,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // --- helpers ---------------------------------------------------------------
@@ -163,7 +164,8 @@ func main() {
 	setTerminalBG()
 	// No mouse capture: keep the terminal's native text selection and click-to-open links.
 	_, err := tea.NewProgram(newModel(), tea.WithAltScreen()).Run()
-	resetTerminalBG() // restore the user's background before we hand the terminal back
+	resetTerminalBG()               // restore the user's background before we hand the terminal back
+	fmt.Print(ansi.SetModeAutoWrap) // View turns autowrap off; the shell needs it back on
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "oh-my-reddit error:", err)
 		os.Exit(1)
